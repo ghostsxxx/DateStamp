@@ -217,9 +217,19 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
       ],
-      "category": "Development"
+      "category": "Utility",
+      "icon": "assets/icon.png",
+      "maintainer": "info@webbill.at",
+      "synopsis": "Date stamp label printer",
+      "description": "A user-friendly desktop application for printing date-stamped labels."
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}.${ext}"
     },
     "directories": {
       "app": "release/app",
