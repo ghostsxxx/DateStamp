@@ -19,6 +19,14 @@ export const IPC_CHANNELS = {
     EXPORT_LOGS: 'logger:exportLogs',
     LOG_PATH: 'logger:getPath',
   },
+  UPDATER: {
+    CHECK: 'updater:check',
+    RESTART: 'updater:restart',
+    GET_STATUS: 'updater:get-status',
+  },
+  APP: {
+    GET_VERSION: 'app:get-version',
+  },
   LEGACY: {
     PRINT: 'ipc-example',
   }

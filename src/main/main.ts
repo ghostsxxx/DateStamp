@@ -10,22 +10,15 @@
  */
 import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
-import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import SettingsHandler from './ipc/settings-handler';
 import PrinterHandler from './ipc/printer-handler';
 import LoggerHandler from './ipc/logger-handler';
+import { registerUpdaterHandlers } from './ipc/updater-handler';
+import { registerAppHandlers } from './ipc/app-handler';
 import logger from './services/logger';
-
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+import updaterService from './services/updater';
 
 let mainWindow: BrowserWindow | null = null;
 let settingsHandler: SettingsHandler | null = null;
@@ -37,6 +30,8 @@ const initializeIpcHandlers = () => {
   settingsHandler = new SettingsHandler();
   printerHandler = new PrinterHandler();
   loggerHandler = new LoggerHandler();
+  registerUpdaterHandlers();
+  registerAppHandlers();
   logger.info('IPC handlers initialized');
 };
 
@@ -104,6 +99,11 @@ const createWindow = async () => {
       mainWindow.show();
     }
     logger.info('Main window ready');
+    
+    // Initialize updater service
+    if (process.env.NODE_ENV === 'production') {
+      updaterService.initialize(mainWindow);
+    }
   });
 
   mainWindow.on('closed', () => {
@@ -119,10 +119,6 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
-
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
 };
 
 /**
@@ -167,4 +163,6 @@ app.on('before-quit', () => {
   if (loggerHandler) {
     loggerHandler.cleanup();
   }
+  // Cleanup updater service
+  updaterService.cleanup();
 });

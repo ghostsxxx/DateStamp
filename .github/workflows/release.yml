@@ -1,0 +1,88 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Build AppImage
+        run: npm run package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Changes in this Release
+            - Auto-update functionality added
+            - Bug fixes and improvements
+            
+            ## Installation
+            Download the AppImage file and make it executable:
+            ```bash
+            chmod +x DateStamp-*.AppImage
+            ./DateStamp-*.AppImage
+            ```
+          draft: false
+          prerelease: false
+
+      - name: Find AppImage file
+        id: find_appimage
+        run: |
+          APPIMAGE_FILE=$(find ./release/build -name "*.AppImage" -type f | head -1)
+          echo "APPIMAGE_PATH=$APPIMAGE_FILE" >> $GITHUB_OUTPUT
+          echo "Found AppImage: $APPIMAGE_FILE"
+
+      - name: Upload AppImage
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.find_appimage.outputs.APPIMAGE_PATH }}
+          asset_name: DateStamp-${{ steps.get_version.outputs.VERSION }}.AppImage
+          asset_content_type: application/x-executable
+
+      - name: Upload latest-linux.yml
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/build/latest-linux.yml
+          asset_name: latest-linux.yml
+          asset_content_type: text/yaml

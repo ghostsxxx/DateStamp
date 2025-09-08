@@ -25,6 +25,21 @@ interface Settings {
   };
 }
 
+interface UpdateStatus {
+  checking: boolean;
+  available: boolean;
+  downloading: boolean;
+  downloadProgress?: number;
+  downloaded: boolean;
+  error?: string;
+  updateInfo?: {
+    version: string;
+    releaseDate: string;
+    releaseName?: string;
+    releaseNotes?: string;
+  };
+}
+
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [printers, setPrinters] = useState<Printer[]>([]);
@@ -38,13 +53,33 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({
+    checking: false,
+    available: false,
+    downloading: false,
+    downloaded: false,
+  });
+  const [currentVersion, setCurrentVersion] = useState<string>('Unknown');
 
   useEffect(() => {
     if (isOpen) {
       loadSettings();
       loadPrinters();
+      loadUpdateStatus();
+      loadAppVersion();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    // Listen for update status changes
+    const removeListener = window.electron.ipcRenderer.on('update-status', (status: UpdateStatus) => {
+      setUpdateStatus(status);
+    });
+
+    return () => {
+      removeListener();
+    };
+  }, []);
 
   const loadSettings = async () => {
     try {
@@ -78,6 +113,50 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     } catch (err) {
       console.error('Error loading printers:', err);
       setError('Error loading printer list');
+    }
+  };
+
+  const loadUpdateStatus = async () => {
+    try {
+      const response = await window.electron.ipcRenderer.invoke('updater:get-status');
+      if (response.success && response.data) {
+        setUpdateStatus(response.data);
+      }
+    } catch (err) {
+      console.error('Error loading update status:', err);
+    }
+  };
+
+  const loadAppVersion = async () => {
+    try {
+      const response = await window.electron.ipcRenderer.invoke('app:get-version');
+      if (response.success && response.data) {
+        setCurrentVersion(response.data);
+      }
+    } catch (err) {
+      console.error('Error loading app version:', err);
+    }
+  };
+
+  const handleCheckUpdate = async () => {
+    setUpdateStatus(prev => ({ ...prev, checking: true, error: undefined }));
+    try {
+      const response = await window.electron.ipcRenderer.invoke('updater:check');
+      if (!response.success) {
+        setUpdateStatus(prev => ({ ...prev, checking: false, error: response.error }));
+      }
+    } catch (err) {
+      console.error('Error checking for updates:', err);
+      setUpdateStatus(prev => ({ ...prev, checking: false, error: 'Failed to check for updates' }));
+    }
+  };
+
+  const handleRestartUpdate = async () => {
+    try {
+      await window.electron.ipcRenderer.invoke('updater:restart');
+    } catch (err) {
+      console.error('Error restarting for update:', err);
+      setError('Failed to restart for update');
     }
   };
 
@@ -268,6 +347,65 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 <span>Auto-update date in label</span>
               </label>
             </div>
+          </div>
+
+          <div className="settings-section">
+            <h3>Application Updates</h3>
+            
+            <div className="settings-field">
+              <label>Current Version: {currentVersion}</label>
+            </div>
+
+            {updateStatus.updateInfo && (
+              <div className="settings-field">
+                <label>Available Version: {updateStatus.updateInfo.version}</label>
+              </div>
+            )}
+
+            {updateStatus.downloading && (
+              <div className="settings-field">
+                <label>Download Progress: {Math.round(updateStatus.downloadProgress || 0)}%</label>
+                <div className="update-progress-bar">
+                  <div 
+                    className="update-progress-fill" 
+                    style={{ width: `${updateStatus.downloadProgress || 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {updateStatus.error && (
+              <div className="settings-error">{updateStatus.error}</div>
+            )}
+
+            <div className="settings-field update-buttons">
+              {!updateStatus.downloaded ? (
+                <button
+                  className="settings-button settings-button-update"
+                  onClick={handleCheckUpdate}
+                  disabled={updateStatus.checking || updateStatus.downloading}
+                  type="button"
+                >
+                  {updateStatus.checking ? 'Checking...' : 
+                   updateStatus.downloading ? `Downloading... ${Math.round(updateStatus.downloadProgress || 0)}%` :
+                   updateStatus.available ? 'Update Available' : 'Check for Updates'}
+                </button>
+              ) : (
+                <button
+                  className="settings-button settings-button-restart"
+                  onClick={handleRestartUpdate}
+                  type="button"
+                >
+                  Restart and Update
+                </button>
+              )}
+            </div>
+
+            {updateStatus.downloaded && (
+              <div className="settings-info">
+                Version {updateStatus.updateInfo?.version} is ready to install. Click "Restart and Update" to apply the update.
+              </div>
+            )}
           </div>
 
           {showKeyboard && (
