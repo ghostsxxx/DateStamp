@@ -9,7 +9,7 @@ if (process.env.CI || process.env.NODE_ENV === 'test') {
 } else {
   // Only import webpack paths and check builds when not in CI
   const webpackPaths = require('../configs/webpack.paths').default;
-  
+
   const mainPath = path.join(webpackPaths.distMainPath, 'main.js');
   const rendererPath = path.join(webpackPaths.distRendererPath, 'renderer.js');
 
