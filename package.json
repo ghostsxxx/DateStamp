@@ -61,7 +61,6 @@
   "jest": {
     "moduleDirectories": [
       "node_modules",
-      "release/app/node_modules",
       "src"
     ],
     "moduleFileExtensions": [
@@ -84,7 +83,11 @@
     },
     "testPathIgnorePatterns": [
       "release/app/dist",
+      "release/app",
       ".erb/dll"
+    ],
+    "modulePathIgnorePatterns": [
+      "release/app"
     ],
     "transform": {
       "\\.(ts|tsx|js|jsx)$": "ts-jest"
