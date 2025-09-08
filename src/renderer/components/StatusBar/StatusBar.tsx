@@ -26,9 +26,10 @@ const StatusBar: React.FC<StatusBarProps> = ({ onOpenLogs }) => {
     loadPrinterInfo();
 
     // Listen for print events
-    const handlePrintComplete = (message: string) => {
-      const success = !message.toLowerCase().includes('error');
-      const copies = parseInt(message.match(/\d+/)?.[0] || '1', 10);
+    const handlePrintComplete = (message: unknown) => {
+      const messageStr = String(message);
+      const success = !messageStr.toLowerCase().includes('error');
+      const copies = parseInt(messageStr.match(/\d+/)?.[0] || '1', 10);
 
       setStatus((prev) => ({
         ...prev,

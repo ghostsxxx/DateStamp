@@ -76,8 +76,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     // Listen for update status changes
     const removeListener = window.electron.ipcRenderer.on(
       'update-status',
-      (status: UpdateStatus) => {
-        setUpdateStatus(status);
+      (status: unknown) => {
+        setUpdateStatus(status as UpdateStatus);
       },
     );
 

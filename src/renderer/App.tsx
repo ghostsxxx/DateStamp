@@ -71,7 +71,7 @@ function Hello() {
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
-  const { toasts, removeToast, success, error, _info } = useToast();
+  const { toasts, removeToast, success, error, info: _info } = useToast();
 
   useEffect(() => {
     // Listen for settings open request from menu
@@ -80,13 +80,14 @@ function Hello() {
     };
 
     // Listen for print responses
-    const handlePrintResponse = (message: string) => {
-      if (message.toLowerCase().includes('error')) {
-        error(message);
+    const handlePrintResponse = (message: unknown) => {
+      const messageStr = String(message);
+      if (messageStr.toLowerCase().includes('error')) {
+        error(messageStr);
       } else {
-        success(message);
+        success(messageStr);
       }
-      setResponse(message);
+      setResponse(messageStr);
     };
 
     window.electron.ipcRenderer.on('open-settings', handleOpenSettings);
@@ -96,7 +97,7 @@ function Hello() {
       window.electron.ipcRenderer.removeAllListeners('open-settings');
       window.electron.ipcRenderer.removeAllListeners('ipc-example');
     };
-  }, []);
+  }, [error, success]);
 
   const handleGearClick = () => {
     setShowPinDialog(true);

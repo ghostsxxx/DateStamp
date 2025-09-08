@@ -5,7 +5,7 @@ import fs from 'fs';
 
 // Skip build check in CI environment or when running tests
 if (process.env.CI || process.env.NODE_ENV === 'test') {
-  console.log('Skipping build check in CI/test environment');
+  // Skipping build check in CI/test environment
 } else {
   // Only import webpack paths and check builds when not in CI
   const webpackPaths = require('../configs/webpack.paths').default;
