@@ -1,0 +1,179 @@
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(50, 50, 50, 0.9) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 20px;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.status-bar:hover {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(60, 60, 60, 0.95) 100%);
+}
+
+.status-bar.expanded {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(60, 60, 60, 0.95) 100%);
+}
+
+.status-bar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  position: relative;
+}
+
+.status-section.expanded {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.status-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
+
+.status-value {
+  color: white;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-detail {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  display: block;
+  margin-top: 2px;
+}
+
+.status-printer {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-last-print {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s;
+}
+
+.status-last-print.status-success {
+  background-color: rgba(76, 175, 80, 0.2);
+}
+
+.status-last-print.status-error {
+  background-color: rgba(244, 67, 54, 0.2);
+}
+
+.status-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.status-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.status-btn:active {
+  transform: translateY(0);
+}
+
+.status-bar-expanded {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 10px;
+  animation: slideDown 0.3s ease;
+}
+
+.status-btn-small {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.status-btn-small:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Touch screen adjustments */
+@media (max-width: 600px) {
+  .status-bar {
+    padding: 10px 15px;
+  }
+  
+  .status-bar-content {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .status-section {
+    font-size: 12px;
+  }
+  
+  .status-label {
+    font-size: 11px;
+  }
+  
+  .status-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Ensure status bar doesn't overlap with gear icon */
+.status-bar {
+  padding-right: 80px;
+}

@@ -1,0 +1,38 @@
+.gear-icon-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  padding: 0;
+}
+
+.gear-icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: rotate(45deg);
+}
+
+.gear-icon-button:active {
+  transform: scale(0.95) rotate(45deg);
+}
+
+.gear-icon {
+  width: 28px;
+  height: 28px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: color 0.3s ease;
+}
+
+.gear-icon-button:hover .gear-icon {
+  color: rgba(255, 255, 255, 1);
+}
