@@ -11,14 +11,14 @@ import './App.css';
 
 function sendPrintEvent(
   copies: number,
-  setResponse: (response: string) => void,
+  _setResponse: (response: string) => void,
 ) {
-  console.log('print event', copies);
+  // Log('print event', copies);
   window.electron.ipcRenderer.sendMessage('ipc-example', copies);
   // get the response from the main process
   /*  window.electron.ipcRenderer.once('ipc-example', (arg) => {
     setResponse(arg);
-    console.log('teeeest', arg);
+    // Log('teeeest', arg);
   }); */
 }
 
@@ -40,7 +40,7 @@ function Button({
   );
 }
 
-const printCount = Array.from({ length: 12 }, (_, i) => i + 1);
+const _printCount = Array.from({ length: 12 }, (_, i) => i + 1);
 
 function isPrime(num: number): boolean {
   if (num <= 1) return false; // 1 is not a prime number
@@ -67,11 +67,11 @@ function generatePrimes(count: number): number[] {
 const first12Primes = generatePrimes(12);
 
 function Hello() {
-  const [response, setResponse] = React.useState('');
+  const [_response, setResponse] = React.useState('');
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
-  const { toasts, removeToast, success, error, info } = useToast();
+  const { toasts, removeToast, success, error, _info } = useToast();
 
   useEffect(() => {
     // Listen for settings open request from menu
@@ -131,28 +131,22 @@ function Hello() {
           <Button key={i} copies={i} setResponse={setResponse} />
         ))}
       </div>
-      
+
       <GearIcon onClick={handleGearClick} />
-      
+
       <StatusBar onOpenLogs={handleOpenLogs} />
-      
+
       <Toast messages={toasts} onRemove={removeToast} />
-      
+
       <PinDialog
         isOpen={showPinDialog}
         onClose={handlePinClose}
         onSuccess={handlePinSuccess}
       />
-      
-      <SettingsModal
-        isOpen={showSettings}
-        onClose={handleSettingsClose}
-      />
-      
-      <LogViewer
-        isOpen={showLogs}
-        onClose={handleCloseLogs}
-      />
+
+      <SettingsModal isOpen={showSettings} onClose={handleSettingsClose} />
+
+      <LogViewer isOpen={showLogs} onClose={handleCloseLogs} />
     </div>
   );
 }

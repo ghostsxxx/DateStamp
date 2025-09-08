@@ -12,7 +12,7 @@ const OnScreenKeyboard: React.FC<OnScreenKeyboardProps> = ({
   value,
   onChange,
   onDone,
-  placeholder = 'Enter text...'
+  placeholder = 'Enter text...',
 }) => {
   const [isShift, setIsShift] = useState(false);
 
@@ -21,7 +21,7 @@ const OnScreenKeyboard: React.FC<OnScreenKeyboardProps> = ({
     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
     ['shift', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'backspace'],
-    ['space', 'clear', 'done']
+    ['space', 'clear', 'done'],
   ];
 
   const handleKeyPress = (key: string) => {
@@ -30,7 +30,7 @@ const OnScreenKeyboard: React.FC<OnScreenKeyboardProps> = ({
         onChange(value.slice(0, -1));
         break;
       case 'space':
-        onChange(value + ' ');
+        onChange(`${value} `);
         break;
       case 'clear':
         onChange('');
@@ -61,12 +61,18 @@ const OnScreenKeyboard: React.FC<OnScreenKeyboardProps> = ({
 
   const getKeyLabel = (key: string) => {
     switch (key) {
-      case 'backspace': return '⌫';
-      case 'shift': return '⇧';
-      case 'space': return 'Space';
-      case 'clear': return 'Clear';
-      case 'done': return 'Done';
-      default: return isShift ? key.toUpperCase() : key;
+      case 'backspace':
+        return '⌫';
+      case 'shift':
+        return '⇧';
+      case 'space':
+        return 'Space';
+      case 'clear':
+        return 'Clear';
+      case 'done':
+        return 'Done';
+      default:
+        return isShift ? key.toUpperCase() : key;
     }
   };
 

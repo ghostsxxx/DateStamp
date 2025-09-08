@@ -19,11 +19,7 @@ const Toast: React.FC<ToastProps> = ({ messages, onRemove }) => {
   return (
     <div className="toast-container">
       {messages.map((toast) => (
-        <ToastItem
-          key={toast.id}
-          toast={toast}
-          onRemove={onRemove}
-        />
+        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
     </div>
   );
@@ -37,6 +33,13 @@ interface ToastItemProps {
 const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
   const [isLeaving, setIsLeaving] = useState(false);
 
+  const handleRemove = () => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      onRemove(toast.id);
+    }, 300); // Match animation duration
+  };
+
   useEffect(() => {
     const duration = toast.duration || 5000;
     const timer = setTimeout(() => {
@@ -44,14 +47,8 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
     }, duration);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast]);
-
-  const handleRemove = () => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      onRemove(toast.id);
-    }, 300); // Match animation duration
-  };
 
   const getIcon = () => {
     switch (toast.type) {
@@ -68,8 +65,10 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
   };
 
   return (
-    <div 
-      className={`toast toast-${toast.type} ${isLeaving ? 'toast-leaving' : ''}`}
+    <div
+      className={`toast toast-${toast.type} ${
+        isLeaving ? 'toast-leaving' : ''
+      }`}
       onClick={handleRemove}
     >
       <span className="toast-icon">{getIcon()}</span>
@@ -99,7 +98,7 @@ export const useToast = () => {
       id,
       type,
       message,
-      duration
+      duration,
     };
     setToasts((prev) => [...prev, newToast]);
   };
@@ -131,7 +130,7 @@ export const useToast = () => {
     success,
     error,
     info,
-    warning
+    warning,
   };
 };
 

@@ -8,7 +8,8 @@ export function registerUpdaterHandlers() {
       await updaterService.checkForUpdates();
       return { success: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to check for updates:', errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -19,7 +20,8 @@ export function registerUpdaterHandlers() {
       updaterService.quitAndInstall();
       return { success: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to restart and install update:', errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -30,7 +32,8 @@ export function registerUpdaterHandlers() {
       const status = updaterService.getStatus();
       return { success: true, data: status };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to get update status:', errorMessage);
       return { success: false, error: errorMessage };
     }

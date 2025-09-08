@@ -16,7 +16,7 @@ import SettingsHandler from './ipc/settings-handler';
 import PrinterHandler from './ipc/printer-handler';
 import LoggerHandler from './ipc/logger-handler';
 import { registerUpdaterHandlers } from './ipc/updater-handler';
-import { registerAppHandlers } from './ipc/app-handler';
+import registerAppHandlers from './ipc/app-handler';
 import logger from './services/logger';
 import updaterService from './services/updater';
 
@@ -99,7 +99,7 @@ const createWindow = async () => {
       mainWindow.show();
     }
     logger.info('Main window ready');
-    
+
     // Initialize updater service
     if (process.env.NODE_ENV === 'production') {
       updaterService.initialize(mainWindow);

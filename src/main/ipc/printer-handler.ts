@@ -1,5 +1,5 @@
 import { ipcMain, IpcMainInvokeEvent, IpcMainEvent } from 'electron';
-import printerService, { Printer, PrintResult } from '../services/printer';
+import printerService from '../services/printer';
 import { IPC_CHANNELS } from '../../shared/ipc-channels';
 
 export interface PrinterResponse {
@@ -16,44 +16,35 @@ class PrinterHandler {
   private registerHandlers(): void {
     ipcMain.handle(
       IPC_CHANNELS.PRINTER.LIST,
-      this.handleListPrinters.bind(this)
+      this.handleListPrinters.bind(this),
     );
 
-    ipcMain.handle(
-      IPC_CHANNELS.PRINTER.TEST,
-      this.handleTestPrint.bind(this)
-    );
+    ipcMain.handle(IPC_CHANNELS.PRINTER.TEST, this.handleTestPrint.bind(this));
 
     ipcMain.handle(
       IPC_CHANNELS.PRINTER.STATUS,
-      this.handleGetPrinterStatus.bind(this)
+      this.handleGetPrinterStatus.bind(this),
     );
 
     ipcMain.handle(
       IPC_CHANNELS.PRINTER.QUEUE,
-      this.handleGetPrintQueue.bind(this)
+      this.handleGetPrintQueue.bind(this),
     );
 
     ipcMain.handle(
       IPC_CHANNELS.PRINTER.CANCEL_JOBS,
-      this.handleCancelJobs.bind(this)
+      this.handleCancelJobs.bind(this),
     );
 
     // Keep legacy handler for backward compatibility
-    ipcMain.on(
-      IPC_CHANNELS.LEGACY.PRINT,
-      this.handleLegacyPrint.bind(this)
-    );
+    ipcMain.on(IPC_CHANNELS.LEGACY.PRINT, this.handleLegacyPrint.bind(this));
 
     // New promise-based print handler
-    ipcMain.handle(
-      IPC_CHANNELS.PRINTER.PRINT,
-      this.handlePrint.bind(this)
-    );
+    ipcMain.handle(IPC_CHANNELS.PRINTER.PRINT, this.handlePrint.bind(this));
   }
 
   private async handleListPrinters(
-    event: IpcMainInvokeEvent
+    _event: IpcMainInvokeEvent,
   ): Promise<PrinterResponse> {
     try {
       const printers = await printerService.listPrinters();
@@ -62,7 +53,7 @@ class PrinterHandler {
         data: printers,
       };
     } catch (error: any) {
-      console.error('Error listing printers:', error);
+      // Error('Error listing printers:', error);
       return {
         success: false,
         error: error.message || 'Failed to list printers',
@@ -71,8 +62,8 @@ class PrinterHandler {
   }
 
   private async handlePrint(
-    event: IpcMainInvokeEvent,
-    copies: number
+    _event: IpcMainInvokeEvent,
+    copies: number,
   ): Promise<PrinterResponse> {
     try {
       const result = await printerService.printLabel(copies);
@@ -82,7 +73,7 @@ class PrinterHandler {
         error: result.error,
       };
     } catch (error: any) {
-      console.error('Error printing:', error);
+      // Error('Error printing:', error);
       return {
         success: false,
         error: error.message || 'Failed to print',
@@ -92,28 +83,28 @@ class PrinterHandler {
 
   private async handleLegacyPrint(
     event: IpcMainEvent,
-    copies: number
+    copies: number,
   ): Promise<void> {
     try {
-      console.log('Print request for', copies, 'copies');
+      // Print request for copies
       const result = await printerService.printLabel(copies);
-      
+
       if (result.success) {
-        console.log(result.message);
+        // Log: result.message
         event.reply(IPC_CHANNELS.LEGACY.PRINT, result.message);
       } else {
-        console.error('Print failed:', result.error, result.message);
+        // Error: Print failed
         event.reply(IPC_CHANNELS.LEGACY.PRINT, `Error: ${result.message}`);
       }
     } catch (error: any) {
-      console.error('Error in legacy print handler:', error);
+      // Error in legacy print handler
       event.reply(IPC_CHANNELS.LEGACY.PRINT, `Error: ${error.message}`);
     }
   }
 
   private async handleTestPrint(
-    event: IpcMainInvokeEvent,
-    printerName: string
+    _event: IpcMainInvokeEvent,
+    printerName: string,
   ): Promise<PrinterResponse> {
     try {
       const result = await printerService.testPrint(printerName);
@@ -123,7 +114,7 @@ class PrinterHandler {
         error: result.error,
       };
     } catch (error: any) {
-      console.error('Error in test print:', error);
+      // Error('Error in test print:', error);
       return {
         success: false,
         error: error.message || 'Test print failed',
@@ -132,8 +123,8 @@ class PrinterHandler {
   }
 
   private async handleGetPrinterStatus(
-    event: IpcMainInvokeEvent,
-    printerName: string
+    _event: IpcMainInvokeEvent,
+    printerName: string,
   ): Promise<PrinterResponse> {
     try {
       const status = await printerService.getPrinterStatus(printerName);
@@ -142,7 +133,7 @@ class PrinterHandler {
         data: { status },
       };
     } catch (error: any) {
-      console.error('Error getting printer status:', error);
+      // Error('Error getting printer status:', error);
       return {
         success: false,
         error: error.message || 'Failed to get printer status',
@@ -151,8 +142,8 @@ class PrinterHandler {
   }
 
   private async handleGetPrintQueue(
-    event: IpcMainInvokeEvent,
-    printerName?: string
+    _event: IpcMainInvokeEvent,
+    printerName?: string,
   ): Promise<PrinterResponse> {
     try {
       const queueSize = await printerService.checkPrintQueue(printerName);
@@ -161,7 +152,7 @@ class PrinterHandler {
         data: { queueSize },
       };
     } catch (error: any) {
-      console.error('Error checking print queue:', error);
+      // Error('Error checking print queue:', error);
       return {
         success: false,
         error: error.message || 'Failed to check print queue',
@@ -170,8 +161,8 @@ class PrinterHandler {
   }
 
   private async handleCancelJobs(
-    event: IpcMainInvokeEvent,
-    printerName?: string
+    _event: IpcMainInvokeEvent,
+    printerName?: string,
   ): Promise<PrinterResponse> {
     try {
       const result = await printerService.cancelAllJobs(printerName);
@@ -180,7 +171,7 @@ class PrinterHandler {
         data: { cancelled: result },
       };
     } catch (error: any) {
-      console.error('Error canceling print jobs:', error);
+      // Error('Error canceling print jobs:', error);
       return {
         success: false,
         error: error.message || 'Failed to cancel print jobs',

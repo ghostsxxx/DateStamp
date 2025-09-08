@@ -29,7 +29,7 @@ export const IPC_CHANNELS = {
   },
   LEGACY: {
     PRINT: 'ipc-example',
-  }
+  },
 } as const;
 
 export type IPCChannels = typeof IPC_CHANNELS;

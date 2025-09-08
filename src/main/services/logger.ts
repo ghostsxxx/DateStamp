@@ -12,7 +12,9 @@ export interface LogEntry {
 
 class LoggerService {
   private static instance: LoggerService;
+
   private readonly maxLogAge = 7; // days
+
   private readonly maxLogSize = 10 * 1024 * 1024; // 10MB
 
   private constructor() {
@@ -30,25 +32,30 @@ class LoggerService {
   private configureLogger(): void {
     // Configure log file location
     const logPath = path.join(app.getPath('userData'), 'logs');
-    
+
     // Set log file
     log.transports.file.resolvePathFn = () => path.join(logPath, 'app.log');
     log.transports.file.level = 'info';
     log.transports.file.maxSize = this.maxLogSize;
-    
+
     // Configure console output
-    log.transports.console.level = process.env.NODE_ENV === 'development' ? 'debug' : 'info';
-    
+    log.transports.console.level =
+      process.env.NODE_ENV === 'development' ? 'debug' : 'info';
+
     // Custom format
-    log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}';
+    log.transports.file.format =
+      '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}';
     log.transports.console.format = '[{h}:{i}:{s}] [{level}] {text}';
-    
+
     // Enable catching errors
     log.catchErrors({
       showDialog: false,
       onError: (error) => {
-        this.error('Unhandled error caught', { error: error.message, stack: error.stack });
-      }
+        this.error('Unhandled error caught', {
+          error: error.message,
+          stack: error.stack,
+        });
+      },
     });
   }
 
@@ -60,12 +67,13 @@ class LoggerService {
         if (!logPath) return;
 
         const logDir = path.dirname(logPath);
-        const files = fs.readdirSync(logDir)
-          .filter(file => file.endsWith('.log'))
-          .map(file => ({
+        const files = fs
+          .readdirSync(logDir)
+          .filter((file) => file.endsWith('.log'))
+          .map((file) => ({
             name: file,
             path: path.join(logDir, file),
-            stats: fs.statSync(path.join(logDir, file))
+            stats: fs.statSync(path.join(logDir, file)),
           }))
           .sort((a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime());
 
@@ -74,21 +82,24 @@ class LoggerService {
           const timestamp = new Date().toISOString().split('T')[0];
           const archivePath = path.join(logDir, `app-${timestamp}.log`);
           fs.renameSync(files[0].path, archivePath);
-          this.info('Log file rotated', { oldPath: files[0].path, newPath: archivePath });
+          this.info('Log file rotated', {
+            oldPath: files[0].path,
+            newPath: archivePath,
+          });
         }
 
         // Remove logs older than maxLogAge days
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - this.maxLogAge);
 
-        files.forEach(file => {
+        files.forEach((file) => {
           if (file.stats.mtime < cutoffDate) {
             fs.unlinkSync(file.path);
             this.info('Old log file removed', { file: file.name });
           }
         });
       } catch (error) {
-        console.error('Error during log rotation:', error);
+        // Error('Error during log rotation:', error);
       }
     };
 
@@ -133,7 +144,10 @@ class LoggerService {
   }
 
   // Log management methods
-  public async getLogs(limit: number = 1000, level?: string): Promise<LogEntry[]> {
+  public async getLogs(
+    limit: number = 1000,
+    level?: string,
+  ): Promise<LogEntry[]> {
     try {
       const logFile = log.transports.file.getFile();
       if (!logFile || !logFile.path) {
@@ -141,8 +155,8 @@ class LoggerService {
       }
 
       const content = fs.readFileSync(logFile.path, 'utf8');
-      const lines = content.split('\n').filter(line => line.trim());
-      
+      const lines = content.split('\n').filter((line) => line.trim());
+
       const logs: LogEntry[] = [];
       const levelFilter = level?.toUpperCase();
 
@@ -154,7 +168,7 @@ class LoggerService {
             logs.push({
               timestamp,
               level: logLevel,
-              message: message.trim()
+              message: message.trim(),
             });
           }
         }
@@ -226,17 +240,22 @@ class LoggerService {
       chrome: process.versions.chrome,
       platform: process.platform,
       arch: process.arch,
-      env: process.env.NODE_ENV
+      env: process.env.NODE_ENV,
     });
   }
 
   // Print operation logging
-  public logPrintOperation(printer: string, copies: number, success: boolean, error?: string): void {
+  public logPrintOperation(
+    printer: string,
+    copies: number,
+    success: boolean,
+    error?: string,
+  ): void {
     const logData = {
       printer,
       copies,
       success,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (error) {
@@ -247,12 +266,16 @@ class LoggerService {
   }
 
   // Settings change logging
-  public logSettingsChange(setting: string, oldValue: any, newValue: any): void {
+  public logSettingsChange(
+    setting: string,
+    oldValue: any,
+    newValue: any,
+  ): void {
     this.info('Settings changed', {
       setting,
       oldValue,
       newValue,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }

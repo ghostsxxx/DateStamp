@@ -1,5 +1,5 @@
 import { autoUpdater } from 'electron-updater';
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow } from 'electron';
 import logger from './logger';
 
 export interface UpdateInfo {
@@ -21,7 +21,9 @@ export interface UpdateStatus {
 
 class UpdaterService {
   private mainWindow: BrowserWindow | null = null;
+
   private updateCheckInterval: NodeJS.Timeout | null = null;
+
   private status: UpdateStatus = {
     checking: false,
     available: false,
@@ -63,7 +65,10 @@ class UpdaterService {
         },
       };
       this.sendStatusUpdate();
-      this.sendToastNotification('info', `New version ${info.version} is available and will be downloaded.`);
+      this.sendToastNotification(
+        'info',
+        `New version ${info.version} is available and will be downloaded.`,
+      );
     });
 
     autoUpdater.on('update-not-available', () => {
@@ -107,14 +112,20 @@ class UpdaterService {
         },
       };
       this.sendStatusUpdate();
-      this.sendToastNotification('success', `Version ${info.version} downloaded. Restart to apply update.`);
+      this.sendToastNotification(
+        'success',
+        `Version ${info.version} downloaded. Restart to apply update.`,
+      );
     });
   }
 
   private startPeriodicChecks() {
-    this.updateCheckInterval = setInterval(() => {
-      this.checkForUpdates();
-    }, 60 * 60 * 1000);
+    this.updateCheckInterval = setInterval(
+      () => {
+        this.checkForUpdates();
+      },
+      60 * 60 * 1000,
+    );
   }
 
   private sendStatusUpdate() {
@@ -123,7 +134,10 @@ class UpdaterService {
     }
   }
 
-  private sendToastNotification(type: 'success' | 'error' | 'info' | 'warning', message: string) {
+  private sendToastNotification(
+    type: 'success' | 'error' | 'info' | 'warning',
+    message: string,
+  ) {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.webContents.send('show-toast', { type, message });
     }

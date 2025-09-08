@@ -18,25 +18,25 @@ interface PrintStatus {
 const StatusBar: React.FC<StatusBarProps> = ({ onOpenLogs }) => {
   const [status, setStatus] = useState<PrintStatus>({
     currentPrinter: 'Loading...',
-    printerStatus: 'unknown'
+    printerStatus: 'unknown',
   });
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     loadPrinterInfo();
-    
+
     // Listen for print events
     const handlePrintComplete = (message: string) => {
       const success = !message.toLowerCase().includes('error');
-      const copies = parseInt(message.match(/\d+/)?.[0] || '1');
-      
-      setStatus(prev => ({
+      const copies = parseInt(message.match(/\d+/)?.[0] || '1', 10);
+
+      setStatus((prev) => ({
         ...prev,
         lastPrint: {
           time: new Date().toLocaleTimeString(),
           copies,
-          success
-        }
+          success,
+        },
       }));
     };
 
@@ -49,24 +49,27 @@ const StatusBar: React.FC<StatusBarProps> = ({ onOpenLogs }) => {
 
   const loadPrinterInfo = async () => {
     try {
-      const settingsResponse = await window.electron.ipcRenderer.invoke('settings:get');
+      const settingsResponse =
+        await window.electron.ipcRenderer.invoke('settings:get');
       if (settingsResponse.success && settingsResponse.data) {
         const printerName = settingsResponse.data.printer.name;
-        
+
         // Get printer status
         const statusResponse = await window.electron.ipcRenderer.invoke(
           'printer:status',
-          printerName
+          printerName,
         );
-        
-        setStatus(prev => ({
+
+        setStatus((prev) => ({
           ...prev,
           currentPrinter: printerName,
-          printerStatus: statusResponse.success ? statusResponse.data.status : 'error'
+          printerStatus: statusResponse.success
+            ? statusResponse.data.status
+            : 'error',
         }));
       }
     } catch (error) {
-      console.error('Error loading printer info:', error);
+      // Error('Error loading printer info:', error);
     }
   };
 
@@ -96,13 +99,13 @@ const StatusBar: React.FC<StatusBarProps> = ({ onOpenLogs }) => {
 
   const formatPrinterName = (name: string) => {
     if (name.length > 20 && !expanded) {
-      return name.substring(0, 17) + '...';
+      return `${name.substring(0, 17)}...`;
     }
     return name;
   };
 
   return (
-    <div 
+    <div
       className={`status-bar ${expanded ? 'expanded' : ''}`}
       onClick={() => setExpanded(!expanded)}
     >
@@ -113,19 +116,24 @@ const StatusBar: React.FC<StatusBarProps> = ({ onOpenLogs }) => {
             {getPrinterStatusIcon()} {formatPrinterName(status.currentPrinter)}
           </span>
           {expanded && (
-            <span className="status-detail">Status: {status.printerStatus}</span>
+            <span className="status-detail">
+              Status: {status.printerStatus}
+            </span>
           )}
         </div>
 
         {status.lastPrint && (
-          <div className={`status-section status-last-print ${getPrintStatusClass()}`}>
+          <div
+            className={`status-section status-last-print ${getPrintStatusClass()}`}
+          >
             <span className="status-label">Last Print:</span>
             <span className="status-value">
               {getPrintStatusIcon()} {status.lastPrint.time}
             </span>
             {expanded && (
               <span className="status-detail">
-                {status.lastPrint.copies} label(s) - {status.lastPrint.success ? 'Success' : 'Failed'}
+                {status.lastPrint.copies} label(s) -{' '}
+                {status.lastPrint.success ? 'Success' : 'Failed'}
               </span>
             )}
           </div>

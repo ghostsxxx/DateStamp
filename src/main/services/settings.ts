@@ -22,7 +22,9 @@ export interface AppSettings {
 
 class SettingsService {
   private static instance: SettingsService;
+
   private readonly DEFAULT_PIN = '1234';
+
   private readonly DEFAULT_SETTINGS: AppSettings = {
     printer: {
       name: 'Zebra_Technologies_ZTC_GK420d',
@@ -60,27 +62,29 @@ class SettingsService {
 
   public async getAll(): Promise<AppSettings> {
     try {
-      const allSettings = await settings.get() as AppSettings;
+      const allSettings = (await settings.get()) as AppSettings;
       return { ...this.DEFAULT_SETTINGS, ...allSettings };
     } catch (error) {
-      console.error('Error reading settings:', error);
+      // Error('Error reading settings:', error);
       return this.DEFAULT_SETTINGS;
     }
   }
 
-  public async get<K extends keyof AppSettings>(key: K): Promise<AppSettings[K]> {
+  public async get<K extends keyof AppSettings>(
+    key: K,
+  ): Promise<AppSettings[K]> {
     try {
-      const value = await settings.get(key) as AppSettings[K];
+      const value = (await settings.get(key)) as AppSettings[K];
       return value ?? this.DEFAULT_SETTINGS[key];
     } catch (error) {
-      console.error(`Error reading setting ${key}:`, error);
+      // Error(`Error reading setting ${key}:`, error);
       return this.DEFAULT_SETTINGS[key];
     }
   }
 
   public async set<K extends keyof AppSettings>(
     key: K,
-    value: AppSettings[K]
+    value: AppSettings[K],
   ): Promise<void> {
     try {
       const oldValue = await this.get(key);
@@ -98,7 +102,7 @@ class SettingsService {
       const merged = this.deepMerge(current, updates);
       await settings.set(merged);
     } catch (error) {
-      console.error('Error updating settings:', error);
+      // Error('Error updating settings:', error);
       throw error;
     }
   }
@@ -107,7 +111,7 @@ class SettingsService {
     try {
       await settings.set(this.DEFAULT_SETTINGS);
     } catch (error) {
-      console.error('Error resetting settings:', error);
+      // Error('Error resetting settings:', error);
       throw error;
     }
   }
@@ -117,12 +121,15 @@ class SettingsService {
       const security = await this.get('security');
       return security.pin === pin;
     } catch (error) {
-      console.error('Error validating PIN:', error);
+      // Error('Error validating PIN:', error);
       return false;
     }
   }
 
-  public async setPrinter(printerName: string, isManualEntry: boolean = false): Promise<void> {
+  public async setPrinter(
+    printerName: string,
+    isManualEntry: boolean = false,
+  ): Promise<void> {
     await this.set('printer', {
       name: printerName,
       isManualEntry,
@@ -142,7 +149,7 @@ class SettingsService {
   private deepMerge(target: any, source: any): any {
     const output = { ...target };
     if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(source).forEach(key => {
+      Object.keys(source).forEach((key) => {
         if (this.isObject(source[key])) {
           if (!(key in target)) {
             Object.assign(output, { [key]: source[key] });

@@ -58,15 +58,15 @@ const LogViewer: React.FC<LogViewerProps> = ({ isOpen, onClose }) => {
       const response = await window.electron.ipcRenderer.invoke(
         'logger:getLogs',
         1000,
-        filter === 'all' ? undefined : filter.toUpperCase()
+        filter === 'all' ? undefined : filter.toUpperCase(),
       );
-      
+
       if (response.success && response.data) {
         setLogs(response.data.logs);
         setLogSize(response.data.sizeFormatted);
       }
     } catch (error) {
-      console.error('Error loading logs:', error);
+      // Error('Error loading logs:', error);
     } finally {
       setLoading(false);
     }
@@ -74,45 +74,47 @@ const LogViewer: React.FC<LogViewerProps> = ({ isOpen, onClose }) => {
 
   const filterLogs = () => {
     let filtered = logs;
-    
+
     if (filter !== 'all') {
-      filtered = filtered.filter(log => 
-        log.level.toLowerCase() === filter.toLowerCase()
+      filtered = filtered.filter(
+        (log) => log.level.toLowerCase() === filter.toLowerCase(),
       );
     }
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(log =>
-        log.message.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter((log) =>
+        log.message.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
-    
+
     setFilteredLogs(filtered);
   };
 
   const handleClearLogs = async () => {
     if (window.confirm('Are you sure you want to clear all logs?')) {
       try {
-        const response = await window.electron.ipcRenderer.invoke('logger:clearLogs');
+        const response =
+          await window.electron.ipcRenderer.invoke('logger:clearLogs');
         if (response.success) {
           setLogs([]);
           setFilteredLogs([]);
           setLogSize('0 Bytes');
         }
       } catch (error) {
-        console.error('Error clearing logs:', error);
+        // Error('Error clearing logs:', error);
       }
     }
   };
 
   const handleExportLogs = async () => {
     try {
-      const response = await window.electron.ipcRenderer.invoke('logger:exportLogs');
+      const response =
+        await window.electron.ipcRenderer.invoke('logger:exportLogs');
       if (response.success) {
         alert(`Logs exported to: ${response.data.path}`);
       }
     } catch (error) {
-      console.error('Error exporting logs:', error);
+      // Error('Error exporting logs:', error);
     }
   };
 
@@ -235,13 +237,14 @@ const LogViewer: React.FC<LogViewerProps> = ({ isOpen, onClose }) => {
           {!loading && filteredLogs.length === 0 && (
             <div className="log-empty">No logs to display</div>
           )}
-          {!loading && filteredLogs.map((log, index) => (
-            <div key={index} className="log-entry">
-              <span className="log-timestamp">{log.timestamp}</span>
-              <span className={getLevelClass(log.level)}>{log.level}</span>
-              <span className="log-message">{log.message}</span>
-            </div>
-          ))}
+          {!loading &&
+            filteredLogs.map((log, index) => (
+              <div key={index} className="log-entry">
+                <span className="log-timestamp">{log.timestamp}</span>
+                <span className={getLevelClass(log.level)}>{log.level}</span>
+                <span className="log-message">{log.message}</span>
+              </div>
+            ))}
         </div>
 
         <div className="log-viewer-footer">

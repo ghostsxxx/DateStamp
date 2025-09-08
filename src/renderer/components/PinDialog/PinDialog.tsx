@@ -8,11 +8,11 @@ interface PinDialogProps {
   correctPin?: string;
 }
 
-const PinDialog: React.FC<PinDialogProps> = ({ 
-  isOpen, 
-  onClose, 
+const PinDialog: React.FC<PinDialogProps> = ({
+  isOpen,
+  onClose,
   onSuccess,
-  correctPin = '1234'
+  correctPin: _correctPin = '1234',
 }) => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
@@ -32,8 +32,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   const validatePin = async () => {
     try {
-      const response = await window.electron.ipcRenderer.invoke('settings:validatePin', pin);
-      
+      const response = await window.electron.ipcRenderer.invoke(
+        'settings:validatePin',
+        pin,
+      );
+
       if (response.data?.isValid) {
         setTimeout(() => {
           onSuccess();
@@ -47,7 +50,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
         }, 1000);
       }
     } catch (err) {
-      console.error('Error validating PIN:', err);
+      // Error('Error validating PIN:', err);
       setError(true);
       setTimeout(() => {
         setPin('');
@@ -81,7 +84,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       <div className="pin-dialog">
         <div className="pin-dialog-header">
           <h2>Enter PIN</h2>
-          <button 
+          <button
             className="pin-dialog-close"
             onClick={handleCancel}
             type="button"
@@ -90,12 +93,14 @@ const PinDialog: React.FC<PinDialogProps> = ({
             ×
           </button>
         </div>
-        
+
         <div className="pin-display">
           {[0, 1, 2, 3].map((index) => (
-            <div 
-              key={index} 
-              className={`pin-dot ${pin.length > index ? 'filled' : ''} ${error ? 'error' : ''}`}
+            <div
+              key={index}
+              className={`pin-dot ${pin.length > index ? 'filled' : ''} ${
+                error ? 'error' : ''
+              }`}
             />
           ))}
         </div>

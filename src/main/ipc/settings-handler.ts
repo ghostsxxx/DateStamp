@@ -16,27 +16,27 @@ class SettingsHandler {
   private registerHandlers(): void {
     ipcMain.handle(
       IPC_CHANNELS.SETTINGS.GET,
-      this.handleGetSettings.bind(this)
+      this.handleGetSettings.bind(this),
     );
 
     ipcMain.handle(
       IPC_CHANNELS.SETTINGS.UPDATE,
-      this.handleUpdateSettings.bind(this)
+      this.handleUpdateSettings.bind(this),
     );
 
     ipcMain.handle(
       IPC_CHANNELS.SETTINGS.VALIDATE_PIN,
-      this.handleValidatePin.bind(this)
+      this.handleValidatePin.bind(this),
     );
 
     ipcMain.handle(
       IPC_CHANNELS.SETTINGS.RESET,
-      this.handleResetSettings.bind(this)
+      this.handleResetSettings.bind(this),
     );
   }
 
   private async handleGetSettings(
-    event: IpcMainInvokeEvent
+    _event: IpcMainInvokeEvent,
   ): Promise<SettingsResponse> {
     try {
       const settings = await settingsService.getAll();
@@ -45,7 +45,7 @@ class SettingsHandler {
         data: settings,
       };
     } catch (error: any) {
-      console.error('Error getting settings:', error);
+      // Error('Error getting settings:', error);
       return {
         success: false,
         error: error.message || 'Failed to get settings',
@@ -54,8 +54,8 @@ class SettingsHandler {
   }
 
   private async handleUpdateSettings(
-    event: IpcMainInvokeEvent,
-    updates: Partial<AppSettings>
+    _event: IpcMainInvokeEvent,
+    updates: Partial<AppSettings>,
   ): Promise<SettingsResponse> {
     try {
       await settingsService.update(updates);
@@ -64,7 +64,7 @@ class SettingsHandler {
         data: await settingsService.getAll(),
       };
     } catch (error: any) {
-      console.error('Error updating settings:', error);
+      // Error('Error updating settings:', error);
       return {
         success: false,
         error: error.message || 'Failed to update settings',
@@ -73,8 +73,8 @@ class SettingsHandler {
   }
 
   private async handleValidatePin(
-    event: IpcMainInvokeEvent,
-    pin: string
+    _event: IpcMainInvokeEvent,
+    pin: string,
   ): Promise<SettingsResponse> {
     try {
       const isValid = await settingsService.validatePin(pin);
@@ -83,7 +83,7 @@ class SettingsHandler {
         data: { isValid },
       };
     } catch (error: any) {
-      console.error('Error validating PIN:', error);
+      // Error('Error validating PIN:', error);
       return {
         success: false,
         error: error.message || 'Failed to validate PIN',
@@ -92,7 +92,7 @@ class SettingsHandler {
   }
 
   private async handleResetSettings(
-    event: IpcMainInvokeEvent
+    _event: IpcMainInvokeEvent,
   ): Promise<SettingsResponse> {
     try {
       await settingsService.resetToDefaults();
@@ -101,7 +101,7 @@ class SettingsHandler {
         data: await settingsService.getAll(),
       };
     } catch (error: any) {
-      console.error('Error resetting settings:', error);
+      // Error('Error resetting settings:', error);
       return {
         success: false,
         error: error.message || 'Failed to reset settings',

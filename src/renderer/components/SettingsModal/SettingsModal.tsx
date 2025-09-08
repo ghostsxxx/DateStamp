@@ -41,14 +41,16 @@ interface UpdateStatus {
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
-  const [settings, setSettings] = useState<Settings | null>(null);
+  const [_settings, setSettings] = useState<Settings | null>(null);
   const [printers, setPrinters] = useState<Printer[]>([]);
   const [selectedPrinter, setSelectedPrinter] = useState('');
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [manualPrinterName, setManualPrinterName] = useState('');
   const [labelPath, setLabelPath] = useState('');
   const [autoUpdateDate, setAutoUpdateDate] = useState(true);
-  const [showKeyboard, setShowKeyboard] = useState<'printer' | 'path' | null>(null);
+  const [showKeyboard, setShowKeyboard] = useState<'printer' | 'path' | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -72,9 +74,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     // Listen for update status changes
-    const removeListener = window.electron.ipcRenderer.on('update-status', (status: UpdateStatus) => {
-      setUpdateStatus(status);
-    });
+    const removeListener = window.electron.ipcRenderer.on(
+      'update-status',
+      (status: UpdateStatus) => {
+        setUpdateStatus(status);
+      },
+    );
 
     return () => {
       removeListener();
@@ -88,66 +93,80 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         setSettings(response.data);
         setSelectedPrinter(response.data.printer.name);
         setIsManualEntry(response.data.printer.isManualEntry);
-        setManualPrinterName(response.data.printer.isManualEntry ? response.data.printer.name : '');
+        setManualPrinterName(
+          response.data.printer.isManualEntry ? response.data.printer.name : '',
+        );
         setLabelPath(response.data.label.filePath);
         setAutoUpdateDate(response.data.label.autoUpdateDate);
       }
     } catch (err) {
-      console.error('Error loading settings:', err);
+      // Error('Error loading settings:', err);
       setError('Failed to load settings');
     }
   };
 
   const loadPrinters = async () => {
     try {
-      console.log('Loading printers...');
-      const response = await window.electron.ipcRenderer.invoke('printers:list');
-      console.log('Printer response:', response);
+      // Log('Loading printers...');
+      const response =
+        await window.electron.ipcRenderer.invoke('printers:list');
+      // Log('Printer response:', response);
       if (response.success && response.data) {
-        console.log('Setting printers:', response.data);
+        // Log('Setting printers:', response.data);
         setPrinters(response.data);
       } else {
-        console.error('Failed to load printers:', response);
+        // Error('Failed to load printers:', response);
         setError('Failed to load printer list');
       }
     } catch (err) {
-      console.error('Error loading printers:', err);
+      // Error('Error loading printers:', err);
       setError('Error loading printer list');
     }
   };
 
   const loadUpdateStatus = async () => {
     try {
-      const response = await window.electron.ipcRenderer.invoke('updater:get-status');
+      const response =
+        await window.electron.ipcRenderer.invoke('updater:get-status');
       if (response.success && response.data) {
         setUpdateStatus(response.data);
       }
     } catch (err) {
-      console.error('Error loading update status:', err);
+      // Error('Error loading update status:', err);
     }
   };
 
   const loadAppVersion = async () => {
     try {
-      const response = await window.electron.ipcRenderer.invoke('app:get-version');
+      const response =
+        await window.electron.ipcRenderer.invoke('app:get-version');
       if (response.success && response.data) {
         setCurrentVersion(response.data);
       }
     } catch (err) {
-      console.error('Error loading app version:', err);
+      // Error('Error loading app version:', err);
     }
   };
 
   const handleCheckUpdate = async () => {
-    setUpdateStatus(prev => ({ ...prev, checking: true, error: undefined }));
+    setUpdateStatus((prev) => ({ ...prev, checking: true, error: undefined }));
     try {
-      const response = await window.electron.ipcRenderer.invoke('updater:check');
+      const response =
+        await window.electron.ipcRenderer.invoke('updater:check');
       if (!response.success) {
-        setUpdateStatus(prev => ({ ...prev, checking: false, error: response.error }));
+        setUpdateStatus((prev) => ({
+          ...prev,
+          checking: false,
+          error: response.error,
+        }));
       }
     } catch (err) {
-      console.error('Error checking for updates:', err);
-      setUpdateStatus(prev => ({ ...prev, checking: false, error: 'Failed to check for updates' }));
+      // Error('Error checking for updates:', err);
+      setUpdateStatus((prev) => ({
+        ...prev,
+        checking: false,
+        error: 'Failed to check for updates',
+      }));
     }
   };
 
@@ -155,7 +174,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     try {
       await window.electron.ipcRenderer.invoke('updater:restart');
     } catch (err) {
-      console.error('Error restarting for update:', err);
+      // Error('Error restarting for update:', err);
       setError('Failed to restart for update');
     }
   };
@@ -169,9 +188,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
     setLoading(true);
     setError('');
-    
+
     try {
-      const response = await window.electron.ipcRenderer.invoke('printer:test', printerToTest);
+      const response = await window.electron.ipcRenderer.invoke(
+        'printer:test',
+        printerToTest,
+      );
       if (response.success) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
@@ -179,7 +201,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         setError(response.error || 'Test print failed');
       }
     } catch (err) {
-      console.error('Error testing printer:', err);
+      // Error('Error testing printer:', err);
       setError('Test print failed');
     } finally {
       setLoading(false);
@@ -189,20 +211,23 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const handleSave = async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const updates = {
         printer: {
           name: isManualEntry ? manualPrinterName : selectedPrinter,
-          isManualEntry
+          isManualEntry,
         },
         label: {
           filePath: labelPath,
-          autoUpdateDate
-        }
+          autoUpdateDate,
+        },
       };
 
-      const response = await window.electron.ipcRenderer.invoke('settings:update', updates);
+      const response = await window.electron.ipcRenderer.invoke(
+        'settings:update',
+        updates,
+      );
       if (response.success) {
         setSuccess(true);
         setTimeout(() => {
@@ -213,7 +238,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         setError(response.error || 'Failed to save settings');
       }
     } catch (err) {
-      console.error('Error saving settings:', err);
+      // Error('Error saving settings:', err);
       setError('Failed to save settings');
     } finally {
       setLoading(false);
@@ -234,7 +259,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
       <div className="settings-modal">
         <div className="settings-header">
           <h2>Settings</h2>
-          <button 
+          <button
             className="settings-close"
             onClick={handleCancel}
             type="button"
@@ -246,11 +271,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
         <div className="settings-content">
           {error && <div className="settings-error">{error}</div>}
-          {success && <div className="settings-success">Settings saved successfully!</div>}
+          {success && (
+            <div className="settings-success">Settings saved successfully!</div>
+          )}
 
           <div className="settings-section">
             <h3>Printer Configuration</h3>
-            
+
             <div className="settings-field">
               <label className="settings-checkbox">
                 <input
@@ -273,7 +300,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     className="settings-button-inline"
                     onClick={loadPrinters}
                     type="button"
-                    style={{ marginLeft: '10px', padding: '5px 10px', fontSize: '14px' }}
+                    style={{
+                      marginLeft: '10px',
+                      padding: '5px 10px',
+                      fontSize: '14px',
+                    }}
                   >
                     Refresh List
                   </button>
@@ -285,11 +316,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 >
                   <option value="">-- Select Printer --</option>
                   {printers.length === 0 && (
-                    <option value="" disabled>Loading printers...</option>
+                    <option value="" disabled>
+                      Loading printers...
+                    </option>
                   )}
                   {printers.map((printer) => (
                     <option key={printer.name} value={printer.name}>
-                      {printer.name} {printer.isDefault ? '(Default)' : ''} - {printer.status}
+                      {printer.name} {printer.isDefault ? '(Default)' : ''} -{' '}
+                      {printer.status}
                     </option>
                   ))}
                 </select>
@@ -313,7 +347,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             <button
               className="settings-button settings-button-test"
               onClick={handleTestPrint}
-              disabled={loading || (!isManualEntry && !selectedPrinter) || (isManualEntry && !manualPrinterName)}
+              disabled={
+                loading ||
+                (!isManualEntry && !selectedPrinter) ||
+                (isManualEntry && !manualPrinterName)
+              }
               type="button"
             >
               Test Print
@@ -322,7 +360,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           <div className="settings-section">
             <h3>Label Configuration</h3>
-            
+
             <div className="settings-field">
               <label>Label File Path:</label>
               <div className="input-with-keyboard">
@@ -351,23 +389,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
           <div className="settings-section">
             <h3>Application Updates</h3>
-            
+
             <div className="settings-field">
               <label>Current Version: {currentVersion}</label>
             </div>
 
             {updateStatus.updateInfo && (
               <div className="settings-field">
-                <label>Available Version: {updateStatus.updateInfo.version}</label>
+                <label>
+                  Available Version: {updateStatus.updateInfo.version}
+                </label>
               </div>
             )}
 
             {updateStatus.downloading && (
               <div className="settings-field">
-                <label>Download Progress: {Math.round(updateStatus.downloadProgress || 0)}%</label>
+                <label>
+                  Download Progress:{' '}
+                  {Math.round(updateStatus.downloadProgress || 0)}%
+                </label>
                 <div className="update-progress-bar">
-                  <div 
-                    className="update-progress-fill" 
+                  <div
+                    className="update-progress-fill"
                     style={{ width: `${updateStatus.downloadProgress || 0}%` }}
                   />
                 </div>
@@ -386,9 +429,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   disabled={updateStatus.checking || updateStatus.downloading}
                   type="button"
                 >
-                  {updateStatus.checking ? 'Checking...' : 
-                   updateStatus.downloading ? `Downloading... ${Math.round(updateStatus.downloadProgress || 0)}%` :
-                   updateStatus.available ? 'Update Available' : 'Check for Updates'}
+                  {updateStatus.checking
+                    ? 'Checking...'
+                    : updateStatus.downloading
+                    ? `Downloading... ${Math.round(
+                        updateStatus.downloadProgress || 0,
+                      )}%`
+                    : updateStatus.available
+                    ? 'Update Available'
+                    : 'Check for Updates'}
                 </button>
               ) : (
                 <button
@@ -403,7 +452,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
             {updateStatus.downloaded && (
               <div className="settings-info">
-                Version {updateStatus.updateInfo?.version} is ready to install. Click "Restart and Update" to apply the update.
+                Version {updateStatus.updateInfo?.version} is ready to install.
+                Click "Restart and Update" to apply the update.
               </div>
             )}
           </div>
@@ -411,7 +461,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           {showKeyboard && (
             <div className="keyboard-container">
               <OnScreenKeyboard
-                value={showKeyboard === 'printer' ? manualPrinterName : labelPath}
+                value={
+                  showKeyboard === 'printer' ? manualPrinterName : labelPath
+                }
                 onChange={(value) => {
                   if (showKeyboard === 'printer') {
                     setManualPrinterName(value);
@@ -420,7 +472,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   }
                 }}
                 onDone={() => setShowKeyboard(null)}
-                placeholder={showKeyboard === 'printer' ? 'Enter printer name' : 'Enter file path'}
+                placeholder={
+                  showKeyboard === 'printer'
+                    ? 'Enter printer name'
+                    : 'Enter file path'
+                }
               />
             </div>
           )}
@@ -453,11 +509,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
         </div>
-        
-        <LogViewer
-          isOpen={showLogs}
-          onClose={() => setShowLogs(false)}
-        />
+
+        <LogViewer isOpen={showLogs} onClose={() => setShowLogs(false)} />
       </div>
     </div>
   );
